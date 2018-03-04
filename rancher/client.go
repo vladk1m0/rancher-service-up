@@ -76,14 +76,14 @@ type InServiceStrategy struct {
 
 // Client for rancher REST api
 type Client struct {
-	debug   bool
-	baseURL string
+	debug bool
+	url   string
 }
 
 // NewClient constructor
 func NewClient(debug bool, baseURL string, key string, secret string) (*Client, error) {
 	baseURL = strings.TrimSpace(baseURL)
-	apiURL, err := url.Parse(baseURL)
+	apiBaseURL, err := url.Parse(baseURL)
 	if err != nil {
 		return nil, err
 	}
@@ -101,20 +101,20 @@ func NewClient(debug bool, baseURL string, key string, secret string) (*Client, 
 	api := &Client{}
 	api.debug = debug
 
-	if apiURL.Scheme == "https" {
+	if apiBaseURL.Scheme == "https" {
 		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
 
-	api.baseURL = fmt.Sprintf("%s://%s:%s@%s/v1", apiURL.Scheme, key, secret, apiURL.Host)
+	api.url = fmt.Sprintf("%s://%s:%s@%s/v1", apiBaseURL.Scheme, key, secret, apiBaseURL.Host)
 	if debug {
-		log.Printf("Rancher api url [%s]\n", api.baseURL)
+		log.Printf("Rancher api url [%s]\n", api.url)
 	}
 
 	return api, nil
 }
 
 func (api *Client) fetchItems(uri string) (*[]ConfigItem, error) {
-	targetURL := fmt.Sprintf("%s/%s", api.baseURL, uri)
+	targetURL := fmt.Sprintf("%s/%s", api.url, uri)
 	if api.debug {
 		log.Printf("Fetch list items from [%s]\n", targetURL)
 	}
@@ -251,7 +251,7 @@ func (api *Client) GetServiceStatus(service *Service) (string, error) {
 		return "", fmt.Errorf("argument [service] can't be null")
 	}
 
-	resp, err := http.Get(fmt.Sprintf("%s/projects/%s/services/%s", api.baseURL, service.EnvID, service.ID))
+	resp, err := http.Get(fmt.Sprintf("%s/projects/%s/services/%s", api.url, service.EnvID, service.ID))
 	if err != nil {
 		if api.debug {
 			log.Println(err)
@@ -279,7 +279,7 @@ func (api *Client) FinishUpgrade(service *Service) error {
 		return fmt.Errorf("argument [service] can't be null")
 	}
 
-	resp, err := http.Post(fmt.Sprintf("%s/projects/%s/services/%s/?action=finishupgrade", api.baseURL, service.EnvID, service.ID), "application/json; charset=utf-8", bytes.NewBuffer([]byte(`{}`)))
+	resp, err := http.Post(fmt.Sprintf("%s/projects/%s/services/%s/?action=finishupgrade", api.url, service.EnvID, service.ID), "application/json; charset=utf-8", bytes.NewBuffer([]byte(`{}`)))
 	if err != nil {
 		if api.debug {
 			log.Println(err)
@@ -297,7 +297,7 @@ func (api *Client) RollbackUpgrade(service *Service) error {
 		return fmt.Errorf("argument [service] can't be null")
 	}
 
-	resp, err := http.Post(fmt.Sprintf("%s/projects/%s/services/%s/?action=rollback", api.baseURL, service.EnvID, service.ID), "application/json; charset=utf-8", bytes.NewBuffer([]byte(`{}`)))
+	resp, err := http.Post(fmt.Sprintf("%s/projects/%s/services/%s/?action=rollback", api.url, service.EnvID, service.ID), "application/json; charset=utf-8", bytes.NewBuffer([]byte(`{}`)))
 	if err != nil {
 		if api.debug {
 			log.Println(err)
@@ -402,7 +402,7 @@ func (api *Client) UpgradeService(service *Service, req *UpgradeRequest) error {
 	}
 	buff := bytes.NewBuffer(b)
 
-	resp, err := http.Post(fmt.Sprintf("%s/projects/%s/services/%s/?action=upgrade", api.baseURL, service.EnvID, service.ID), "application/json; charset=utf-8", buff)
+	resp, err := http.Post(fmt.Sprintf("%s/projects/%s/services/%s/?action=upgrade", api.url, service.EnvID, service.ID), "application/json; charset=utf-8", buff)
 	if err != nil {
 		if api.debug {
 			log.Println(err)

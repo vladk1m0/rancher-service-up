@@ -52,25 +52,23 @@ func main() {
 	defer panicExit()
 
 	opts := struct {
-		debug                *bool
-		version              *bool
-		url                  *string
-		key                  *string
-		secret               *string
-		env                  *string
-		stack                *string
-		service              *string
-		image                *string
-		startFirst           *bool
-		batchSize            *int
-		batchInterval        *int
-		upgradeTimeout       *int
-		waiteUpgradeFinish   *bool
-		noWaiteUpgradeFinish *bool
-		finishUpgrade        *bool
-		noFinishUpgrade      *bool
-		upgradeSidekicks     *bool
-		newSidekickImage     *rancher.SidekickImageParams
+		debug               *bool
+		version             *bool
+		url                 *string
+		key                 *string
+		secret              *string
+		env                 *string
+		stack               *string
+		service             *string
+		image               *string
+		startFirst          *bool
+		batchSize           *int
+		batchInterval       *int
+		upgradeTimeout      *int
+		waitUpgradeFinish   *bool
+		finishUpgrade       *bool
+		upgradeSidekicks    *bool
+		newSidekickImage    *rancher.SidekickImageParams
 	}{}
 
 	opts.debug = flag.Bool("debug", false, "Enable debug mode.")
@@ -88,7 +86,7 @@ func main() {
 	opts.batchSize = flag.Int("batch-size", 1, "Number of containers to upgrade at once.")
 	opts.batchInterval = flag.Int("batch-interval", 2, "Number of seconds to wait between upgrade batches.")
 	opts.upgradeTimeout = flag.Int("upgrade-timeout", 3*60, "How long to wait, in seconds, for the upgrade to finish before exiting.")
-	opts.waiteUpgradeFinish = flag.Bool("wait-for-upgrade-to-finish", true, "Wait for Rancher to finish the upgrade before this tool exits.")
+	opts.waitUpgradeFinish = flag.Bool("wait-for-upgrade-to-finish", true, "Wait for Rancher to finish the upgrade before this tool exits.")
 	opts.finishUpgrade = flag.Bool("finish-upgrade", true, "Mark the upgrade as finished after it completes.")
 
 	opts.upgradeSidekicks = flag.Bool("upgrade-sidekicks", false, "Upgrade service sidekicks at the same time.")
@@ -179,7 +177,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	if *opts.waiteUpgradeFinish {
+	if *opts.waitUpgradeFinish {
 		err := api.WaitForServiceState(service, *opts.upgradeTimeout, "upgraded")
 		if err != nil {
 			log.Println(err.Error())
