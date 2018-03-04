@@ -1,0 +1,19 @@
+dist: trusty
+language: go
+go: 
+- "1.10.x"
+services:
+    - docker
+env:
+    global:
+        - COMMIT=${TRAVIS_COMMIT::8}
+        - REPO=vladk1m0/docker-rancher-service-up
+script:
+    - ln -s $HOME/gopath/src/github.com/vladk1m0/rancher-service-up $HOME/gopath/src/rancher-service-up
+    - go test -cover -race -v ./...
+script:
+    - docker --version
+    - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
+    - docker login -u $DOCKER_USER -p $DOCKER_PASS
+    - docker build -t $REPO:$TAG .
+    - docker push $REPO:$TAG
