@@ -11,7 +11,7 @@ env:
 script:
     - ln -s $HOME/gopath/src/github.com/vladk1m0/rancher-service-up $HOME/gopath/src/rancher-service-up
     - go test -cover -race -v ./...
-script:
+    - go vet ./... 
     - docker --version
     - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
     - docker login -u $DOCKER_USER -p $DOCKER_PASS
